@@ -6,20 +6,17 @@ import Image from 'next/image';
 const CAROUSEL_IMAGES = [
   '/carrousel/luquitas.png',
   '/carrousel/tincho.png',
+  '/carrousel/casa-pdp.png',
+  '/carrousel/fogon.png',
+  '/carrousel/pibes.png',
+  '/carrousel/amanacer.png',
+  '/carrousel/nonstop.png',
+  '/carrousel/alcoholes.png'
 ];
 
 export default function Carousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
-
-  useEffect(() => {
-    // Auto-advance every 10 seconds
-    const interval = setInterval(() => {
-      handleNext();
-    }, 10000);
-
-    return () => clearInterval(interval);
-  }, [currentIndex]);
 
   const handleNext = () => {
     setIsTransitioning(true);
@@ -28,6 +25,18 @@ export default function Carousel() {
       setIsTransitioning(false);
     }, 300);
   };
+
+  useEffect(() => {
+    
+    // Auto-advance every 10 seconds
+    const interval = setInterval(() => {
+      handleNext();
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [currentIndex]);
+
+  
 
   const handlePrev = () => {
     setIsTransitioning(true);
@@ -69,10 +78,10 @@ export default function Carousel() {
       {/* Previous Button */}
       <button
         onClick={handlePrev}
-        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-3 shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
+        className="absolute left-4 top-1/2 -translate-y-1/2 text-white drop-shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
         aria-label="Anterior"
       >
-        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
         </svg>
       </button>
@@ -80,10 +89,10 @@ export default function Carousel() {
       {/* Next Button */}
       <button
         onClick={handleNext}
-        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-3 shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
+        className="absolute right-4 top-1/2 -translate-y-1/2 text-white drop-shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
         aria-label="Siguiente"
       >
-        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
         </svg>
       </button>

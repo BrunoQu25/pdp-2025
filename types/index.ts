@@ -45,30 +45,128 @@ export const getAvatarUrl = (filename: string): string => {
 export const HARDCODED_USERS: User[] = [
   {
     id: '1',
-    username: 'bruno',
-    displayName: 'Bruno',
-    photoUrl: 'avatar-bruno.jpg',
+    username: 'Brux',
+    displayName: 'Brux',
+    photoUrl: 'avatar-brux.jpg',
     points: 0
   },
   {
     id: '2',
-    username: 'joão',
-    displayName: 'João',
-    photoUrl: 'avatar-joao.jpg',
+    username: 'Gordo',
+    displayName: 'Gordo',
+    photoUrl: 'avatar-gordo.jpg',
     points: 0
   },
   {
     id: '3',
-    username: 'pedro',
-    displayName: 'Pedro',
-    photoUrl: 'avatar-pedro.jpg',
+    username: 'Fela',
+    displayName: 'Fela',
+    photoUrl: 'avatar-fela.jpg',
     points: 0
   },
   {
     id: '4',
-    username: 'miguel',
-    displayName: 'Miguel',
-    photoUrl: 'avatar-miguel.jpg',
+    username: 'Loca',
+    displayName: 'Loca',
+    photoUrl: 'avatar-loca.jpg',
+    points: 0
+  },
+  {
+    id: '5',
+    username: 'Nachein',
+    displayName: 'Nachein',
+    photoUrl: 'avatar-nachein.jpg',
+    points: 0
+  },
+  {
+    id: '6',
+    username: 'Andi',
+    displayName: 'Andi',
+    photoUrl: 'avatar-andi.jpg',
+    points: 0
+  },
+  {
+    id: '7',
+    username: 'Aguslo',
+    displayName: 'Aguslo',
+    photoUrl: 'avatar-aguslo.jpg',
+    points: 0
+  },
+  {
+    id: '8',
+    username: 'Octo',
+    displayName: 'Octo',
+    photoUrl: 'avatar-octo.jpg',
+    points: 0
+  },
+  {
+    id: '9',
+    username: 'Casti',
+    displayName: 'Casti',
+    photoUrl: 'avatar-casti.jpg',
+    points: 0
+  },
+  {
+    id: '10',
+    username: 'Juanmalore',
+    displayName: 'Juanmalore',
+    photoUrl: 'avatar-juanmalore.jpg',
+    points: 0
+  },
+  {
+    id: '11',
+    username: 'Harry',
+    displayName: 'Harry',
+    photoUrl: 'avatar-harry.jpg',
+    points: 0
+  },
+  {
+    id: '12',
+    username: 'Nicofer',
+    displayName: 'Nicofer',
+    photoUrl: 'avatar-nicofer.jpg',
+    points: 0
+  },
+  {
+    id: '13',
+    username: 'Sopa',
+    displayName: 'Sopa',
+    photoUrl: 'avatar-sopa.jpg',
+    points: 0
+  },
+  {
+    id: '14',
+    username: 'Krugi',
+    displayName: 'Krugi',
+    photoUrl: 'avatar-krugi.jpg',
+    points: 0
+  },
+  {
+    id: '15',
+    username: 'Bri',
+    displayName: 'Bri',
+    photoUrl: 'avatar-bri.jpg',
+    points: 0
+  },
+  {
+    id: '16',
+    username: 'Gabo',
+    displayName: 'Gabo',
+    photoUrl: 'avatar-gabo.jpg',
+    points: 0
+  },
+  {
+    id: '17',
+    username: 'Tincho',
+    displayName: 'Tincho',
+    photoUrl: 'avatar-tincho.jpg',
+    points: 0
+  },
+  {
+    id: '18',
+    username: 'Dyzer',
+    displayName: 'Dyzer',
+    photoUrl: 'avatar-dyzer.jpg',
     points: 0
   }
 ];

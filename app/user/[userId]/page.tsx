@@ -6,7 +6,9 @@ import { useRouter, useParams } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import { Drink } from '@/types';
 import { HARDCODED_USERS } from '@/types';
+import { getFullAvatarUrl } from '@/lib/avatars';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function UserHistoryPage() {
   const { data: session, status } = useSession();
@@ -117,8 +119,15 @@ export default function UserHistoryPage() {
           </Link>
 
           <div className="flex items-center gap-4 mt-4">
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 via-orange-500 to-orange-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg">
-              {user.displayName[0]}
+            <div className="relative w-20 h-20 rounded-2xl overflow-hidden shadow-lg ring-2 ring-orange-400">
+              <Image
+                src={getFullAvatarUrl(user.photoUrl)}
+                alt={user.displayName}
+                width={80}
+                height={80}
+                className="w-full h-full object-cover"
+                unoptimized
+              />
             </div>
             <div className="flex-1">
               <h1 className="text-3xl font-bold text-gray-800">{user.displayName}</h1>
