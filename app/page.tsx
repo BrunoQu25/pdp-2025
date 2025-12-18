@@ -20,7 +20,7 @@ const RANDOM_PHRASES = [
   "1,2,3 El Cale",
   "Calentaron pija de TODOS los pibes",
   "No estoy pa esa porque es la ex de un amigo",
-  "No la soltó nunca el hdp",
+  "No la soltó nunca aparte, por mi iba después de él",
   "Buenas gente, espero que estén bien. Me comunico con ustedes porque (como algunos saben) hace tiempo ando con ganas de meter un Karting"
 ];
 
