@@ -7,21 +7,21 @@ import Navbar from '@/components/Navbar';
 import Leaderboard from '@/components/Leaderboard';
 import Carousel from '@/components/Carousel';
 import Link from 'next/link';
-import { HARDCODED_USERS } from '@/types';
 
 const RANDOM_PHRASES = [
-  "La casa no se hizo para dormir 🏠",
-  "Donde las leyendas se hacen, una bebida a la vez 🍺",
-  "El que no toma, no vive 🥃",
-  "Aquí se viene a ganar o a perder dignamente 🏆",
-  "La competencia es seria, las consecuencias no tanto 😎",
-  "Cada trago cuenta, cada foto es evidencia 📸",
+  "Después no digas que no te gustó",
+  "Desco no hay",
+  "C limaron",
+  "Se congeló la escarcha",
+  "Cerré etapa con las vuelteras",
+  "Me quise hacer el canchero y me salió como el orto",
   "No es alcoholismo si es en la playa 🏖️",
   "Merca, porro y whisky: la santísima trinidad 🙏",
-  "Lo que pasa en PDP, se documenta en PDP 📱",
-  "Beber no es deporte, pero aquí llevamos el marcador ⚽",
-  "La hidratación es importante... el alcohol también cuenta 💧",
-  "Trabajo en equipo hace el sueño funcionar... o no despertar 😴",
+  "1,2,3 El Cale",
+  "Calentaron pija de TODOS los pibes",
+  "No estoy pa esa porque es la ex de un amigo",
+  "No la soltó nunca el hdp",
+  "Buenas gente, espero que estén bien. Me comunico con ustedes porque (como algunos saben) hace tiempo ando con ganas de meter un Karting"
 ];
 
 function HomePageContent() {
