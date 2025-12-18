@@ -4,7 +4,7 @@ Aplicación web móvil para registrar actividades de bebida con amigos. Construi
 
 ## Características
 
-- 🔐 **Inicio de Sesión Simple**: Autenticación solo por nombre de usuario (sin contraseñas)
+- 🔐 **Autenticación Segura con Google**: Los usuarios seleccionan su perfil y se autentican con Google OAuth (ver [GOOGLE_AUTH_SETUP.md](./GOOGLE_AUTH_SETUP.md))
 - 📸 **Subida de Fotos**: Toma fotos directamente desde la cámara de tu teléfono
 - 🏆 **Tabla en Tiempo Real**: Ve quién va ganando en tiempo real
 - 📊 **Sistema de Puntos**: Diferentes tamaños de bebida otorgan diferentes puntos

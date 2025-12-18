@@ -4,6 +4,7 @@ export interface User {
   displayName: string;
   photoUrl: string;
   points: number;
+  authorizedEmail?: string; // Email de Google autorizado para este usuario
 }
 
 export interface Drink {

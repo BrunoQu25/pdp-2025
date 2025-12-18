@@ -48,7 +48,31 @@ If you want to store photos in Azure instead of using placeholders:
 
 ## Customizing Users
 
-Edit `types/index.ts` and update the `HARDCODED_USERS` array with your friends' names.
+Edit `types/index.ts` and update the `HARDCODED_USERS` array with your friends' names and their authorized Google emails.
+
+**Important:** For Google OAuth to work, you must configure the `authorizedEmail` field for each user. See [GOOGLE_AUTH_SETUP.md](./GOOGLE_AUTH_SETUP.md) for detailed instructions.
+
+## Google OAuth Setup
+
+The app uses Google OAuth for secure authentication. Configuration steps:
+
+1. **Configure authorized emails in `types/index.ts`:**
+   ```typescript
+   {
+     id: '1',
+     username: 'bruno',
+     displayName: 'Bruno',
+     authorizedEmail: 'bruno.monteoliva@gmail.com' // ⬅️ Update this
+   }
+   ```
+
+2. **Environment variables are already set in `.env`:**
+   - `GOOGLE_CLIENT_ID`
+   - `GOOGLE_CLIENT_SECRET`
+   - `NEXTAUTH_SECRET`
+   - `NEXTAUTH_URL`
+
+3. **For detailed setup instructions**, see [GOOGLE_AUTH_SETUP.md](./GOOGLE_AUTH_SETUP.md)
 
 ## Adding Photos
 
