@@ -1,8 +1,8 @@
 'use client';
 
 import { useSession, signOut, signIn } from 'next-auth/react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState, Suspense } from 'react';
 import Navbar from '@/components/Navbar';
 import Leaderboard from '@/components/Leaderboard';
 import Carousel from '@/components/Carousel';
@@ -24,10 +24,9 @@ const RANDOM_PHRASES = [
   "Trabajo en equipo hace el sueño funcionar... o no despertar 😴",
 ];
 
-export default function HomePage() {
+function HomePageContent() {
   const { data: session, status, update } = useSession();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [randomPhrase] = useState(() => 
     RANDOM_PHRASES[Math.floor(Math.random() * RANDOM_PHRASES.length)]
   );
@@ -42,7 +41,7 @@ export default function HomePage() {
     if (status === 'authenticated' && session) {
       const handleBinding = async () => {
         // Verificar si hay un usuario seleccionado pendiente de binding
-        const selectedUserId = localStorage.getItem('selectedUser');
+        const selectedUserId = sessionStorage.getItem('pendingBindUserId') || localStorage.getItem('selectedUser');
         
         if (selectedUserId) {
           setIsBinding(true);
@@ -57,6 +56,7 @@ export default function HomePage() {
             const data = await response.json();
 
             if (data.success) {
+              sessionStorage.removeItem('pendingBindUserId');
               localStorage.removeItem('selectedUser');
               
               // IMPORTANTE: Actualizar la sesión para reflejar el binding
@@ -76,6 +76,7 @@ export default function HomePage() {
             } else if (response.status === 409) {
               // Usuario ya tomado por otro email
               alert(`El usuario ya está siendo usado por otra cuenta de Google. Por favor selecciona otro usuario.`);
+              sessionStorage.removeItem('pendingBindUserId');
               localStorage.removeItem('selectedUser');
               await signOut({ callbackUrl: '/login' });
             }
@@ -101,7 +102,7 @@ export default function HomePage() {
 
       handleBinding();
     }
-  }, [status, session, router, searchParams]);
+  }, [status, session, router, update]);
 
   if (status === 'loading') {
     return (
@@ -178,5 +179,20 @@ export default function HomePage() {
         <Leaderboard />
       </div>
     </div>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 font-medium">Cargando...</p>
+        </div>
+      </div>
+    }>
+      <HomePageContent />
+    </Suspense>
   );
 }
