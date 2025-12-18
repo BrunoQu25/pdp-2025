@@ -77,30 +77,25 @@ export const db = {
         return false; // PIN must be 4 digits
       }
       userPins.set(userId, pin);
-      logger.info('PIN set for user', 'DB:Auth', { userId, totalPins: userPins.size, allUserIds: Array.from(userPins.keys()) });
+      logger.info('PIN set for user', 'DB:Auth', { userId });
       return true;
     },
     verifyPin: (userId: string, pin: string): boolean => {
       const storedPin = userPins.get(userId);
-      logger.info('PIN verification attempt', 'DB:Auth', { userId, hasStoredPin: !!storedPin, matches: storedPin === pin });
       return storedPin === pin;
     },
     hasPin: (userId: string): boolean => {
-      const has = userPins.has(userId);
-      logger.info('PIN check', 'DB:Auth', { userId, hasPin: has, totalPins: userPins.size, allUserIds: Array.from(userPins.keys()) });
-      return has;
+      return userPins.has(userId);
     },
     getAllPins: (): Map<string, string> => {
       return new Map(userPins);
     },
     deletePinForUser: (userId: string): boolean => {
-      const existed = userPins.has(userId);
-      logger.info('Attempting to delete PIN', 'DB:Auth', { userId, existed, beforeSize: userPins.size });
-      if (existed) {
-        userPins.delete(userId);
-        logger.info('PIN deleted for user', 'DB:Auth', { userId, afterSize: userPins.size, remainingUsers: Array.from(userPins.keys()) });
+      const result = userPins.delete(userId);
+      if (result) {
+        logger.info('PIN deleted for user', 'DB:Auth', { userId });
       }
-      return existed;
+      return result;
     }
   },
   drinks: {

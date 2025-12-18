@@ -144,8 +144,6 @@ export async function GET(request: NextRequest) {
 
     const hasPin = db.auth.hasPin(userId);
     
-    logger.info('PIN check for user', 'API:Pin', { userId, hasPin });
-    
     return NextResponse.json({
       hasPin,
       userId

@@ -13,6 +13,7 @@ export default function AdminPage() {
   const router = useRouter();
   const [resetting, setResetting] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [pinStatus, setPinStatus] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -34,9 +35,18 @@ export default function AdminPage() {
     return null;
   }
 
+  const checkPinStatus = async (userId: string) => {
+    try {
+      const response = await fetch(`/api/auth/pin?userId=${userId}`);
+      const data = await response.json();
+      setPinStatus(prev => ({ ...prev, [userId]: data.hasPin }));
+    } catch (error) {
+      clientLogger.error('Error checking PIN status', 'Admin', error);
+    }
+  };
+
   const handleResetPin = async (userId: string) => {
     const targetUser = HARDCODED_USERS.find(u => u.id === userId);
-    clientLogger.info('Reset PIN requested', 'Admin', { userId, username: targetUser?.username });
     
     if (!confirm(`¿Estás seguro de que quieres resetear el PIN de ${targetUser?.displayName}?`)) {
       return;
@@ -46,8 +56,6 @@ export default function AdminPage() {
     setMessage(null);
 
     try {
-      clientLogger.info('Sending reset request', 'Admin', { userId });
-      
       const response = await fetch('/api/auth/pin/reset', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
@@ -55,13 +63,13 @@ export default function AdminPage() {
       });
 
       const data = await response.json();
-      clientLogger.info('Reset response received', 'Admin', { data, status: response.status });
 
       if (response.ok && data.success) {
-        clientLogger.info('PIN reset successfully', 'Admin', { userId, hadPin: data.hadPin, deleted: data.deleted });
-        setMessage({ type: 'success', text: `PIN de ${data.username} reseteado correctamente` });
+        setMessage({ type: 'success', text: `PIN de ${data.username} reseteado correctamente. El usuario deberá crear un nuevo PIN en su próximo login.` });
+        
+        // Refresh PIN status
+        await checkPinStatus(userId);
       } else {
-        clientLogger.error('PIN reset failed', 'Admin', { error: data.error, status: response.status });
         setMessage({ type: 'error', text: data.error || 'Error al resetear PIN' });
       }
     } catch (error) {
@@ -71,6 +79,13 @@ export default function AdminPage() {
       setResetting(null);
     }
   };
+
+  // Check PIN status on mount
+  useEffect(() => {
+    if (session?.user?.id === '1') {
+      HARDCODED_USERS.forEach(user => checkPinStatus(user.id));
+    }
+  }, [session]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4">
@@ -129,7 +144,18 @@ export default function AdminPage() {
                     />
                   </div>
                   <div>
-                    <h3 className="font-bold text-gray-800">{user.displayName}</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-bold text-gray-800">{user.displayName}</h3>
+                      {pinStatus[user.id] !== undefined && (
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${
+                          pinStatus[user.id] 
+                            ? 'bg-green-100 text-green-700' 
+                            : 'bg-gray-100 text-gray-700'
+                        }`}>
+                          {pinStatus[user.id] ? 'PIN activo' : 'Sin PIN'}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-sm text-gray-600">@{user.username}</p>
                   </div>
                 </div>

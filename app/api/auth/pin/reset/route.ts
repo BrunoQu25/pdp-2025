@@ -7,7 +7,7 @@ export async function DELETE(request: NextRequest) {
     const body = await request.json();
     const { userId } = body;
 
-    logger.info('PIN reset request received', 'API', { userId, body });
+    logger.info('PIN reset request received', 'API', { userId });
 
     if (!userId) {
       return NextResponse.json(
@@ -27,10 +27,6 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Check if user has a PIN before deleting
-    const hadPin = db.auth.hasPin(userId);
-    logger.info('PIN status before delete', 'API', { userId, hadPin });
-
     // Delete the PIN
     const deleted = db.auth.deletePinForUser(userId);
 
@@ -39,7 +35,6 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({
       success: true,
       username: user.username,
-      hadPin,
       deleted
     });
   } catch (error) {
