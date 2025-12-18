@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
+import { getFullAvatarUrl } from '@/lib/avatars';
 
 interface LeaderboardEntry {
   id: string;
@@ -29,8 +31,8 @@ export default function Leaderboard() {
   useEffect(() => {
     fetchLeaderboard();
     
-    // Refresh every 5 seconds for real-time updates
-    const interval = setInterval(fetchLeaderboard, 5000);
+    // Refresh every 2 minutes for real-time updates
+    const interval = setInterval(fetchLeaderboard, 120000);
     
     return () => clearInterval(interval);
   }, []);
@@ -71,8 +73,15 @@ export default function Leaderboard() {
               </div>
             </div>
 
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 via-orange-500 to-orange-600 flex items-center justify-center text-white text-xl font-bold flex-shrink-0 shadow-md">
-              {entry.displayName[0]}
+            <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 shadow-md ring-2 ring-white">
+              <Image
+                src={getFullAvatarUrl(entry.photoUrl)}
+                alt={entry.displayName}
+                width={48}
+                height={48}
+                className="w-full h-full object-cover"
+                unoptimized
+              />
             </div>
 
             <div className="flex-1 min-w-0">
