@@ -4,6 +4,7 @@ import { logger } from './logger';
 // In-memory storage for demo (in production, use a real database)
 let users: User[] = [...HARDCODED_USERS];
 let drinks: Drink[] = [];
+let emailToUserBindings: Map<string, string> = new Map(); // email -> userId
 
 logger.info('Database initialized', 'DB', {
   userCount: users.length,
@@ -17,12 +18,55 @@ export const db = {
       users.find(u => u.username.toLowerCase() === username.toLowerCase()),
     getById: (id: string): User | undefined => 
       users.find(u => u.id === id),
+    getByEmail: (email: string): User | undefined => 
+      users.find(u => u.authorizedEmail?.toLowerCase() === email.toLowerCase()),
     updatePoints: (userId: string, points: number): User | undefined => {
       const user = users.find(u => u.id === userId);
       if (user) {
         user.points += points;
       }
       return user;
+    }
+  },
+  auth: {
+    // Obtener el userId asociado a un email
+    getUserIdByEmail: (email: string): string | undefined => {
+      return emailToUserBindings.get(email.toLowerCase());
+    },
+    // Verificar si un usuario ya está vinculado a algún email
+    isUserBound: (userId: string): boolean => {
+      return Array.from(emailToUserBindings.values()).includes(userId);
+    },
+    // Vincular un email a un usuario
+    bindEmailToUser: (email: string, userId: string): boolean => {
+      const normalizedEmail = email.toLowerCase();
+      
+      // Verificar si el email ya está vinculado
+      if (emailToUserBindings.has(normalizedEmail)) {
+        return false; // Email ya vinculado a otro usuario
+      }
+      
+      // Verificar si el usuario ya está vinculado a otro email
+      if (db.auth.isUserBound(userId)) {
+        return false; // Usuario ya vinculado a otro email
+      }
+      
+      emailToUserBindings.set(normalizedEmail, userId);
+      logger.info('Email bound to user', 'DB:Auth', { email: normalizedEmail, userId });
+      return true;
+    },
+    // Obtener el email vinculado a un usuario
+    getEmailByUserId: (userId: string): string | undefined => {
+      for (const [email, uid] of emailToUserBindings.entries()) {
+        if (uid === userId) {
+          return email;
+        }
+      }
+      return undefined;
+    },
+    // Listar todos los bindings
+    getAllBindings: (): Map<string, string> => {
+      return new Map(emailToUserBindings);
     }
   },
   drinks: {
@@ -84,6 +128,7 @@ export const db = {
   reset: () => {
     users = [...HARDCODED_USERS];
     drinks = [];
+    emailToUserBindings.clear();
   }
 };
 

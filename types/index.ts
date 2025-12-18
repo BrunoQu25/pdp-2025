@@ -4,6 +4,7 @@ export interface User {
   displayName: string;
   photoUrl: string;
   points: number;
+  authorizedEmail?: string; // Email de Google autorizado para este usuario
 }
 
 export interface Drink {
@@ -48,28 +49,32 @@ export const HARDCODED_USERS: User[] = [
     username: 'bruno',
     displayName: 'Bruno',
     photoUrl: 'avatar-bruno.jpg',
-    points: 0
+    points: 0,
+    authorizedEmail: 'bruno.monteoliva@gmail.com' // Cambiar por el email real de Bruno
   },
   {
     id: '2',
     username: 'joão',
     displayName: 'João',
     photoUrl: 'avatar-joao.jpg',
-    points: 0
+    points: 0,
+    authorizedEmail: 'joao@example.com' // Cambiar por el email real de João
   },
   {
     id: '3',
     username: 'pedro',
     displayName: 'Pedro',
     photoUrl: 'avatar-pedro.jpg',
-    points: 0
+    points: 0,
+    authorizedEmail: 'pedro@example.com' // Cambiar por el email real de Pedro
   },
   {
     id: '4',
     username: 'miguel',
     displayName: 'Miguel',
     photoUrl: 'avatar-miguel.jpg',
-    points: 0
+    points: 0,
+    authorizedEmail: 'miguel@example.com' // Cambiar por el email real de Miguel
   }
 ];
 
