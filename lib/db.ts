@@ -4,7 +4,8 @@ import { logger } from './logger';
 // In-memory storage for demo (in production, use a real database)
 let users: User[] = [...HARDCODED_USERS];
 let drinks: Drink[] = [];
-let emailToUserBindings: Map<string, string> = new Map(); // email -> userId
+const emailToUserBindings: Map<string, string> = new Map(); // email -> userId
+const userPins: Map<string, string> = new Map(); // userId -> PIN (4 digits)
 
 logger.info('Database initialized', 'DB', {
   userCount: users.length,
@@ -12,6 +13,8 @@ logger.info('Database initialized', 'DB', {
 });
 
 export const db = {
+  getUserById: (id: string): User | undefined => 
+    users.find(u => u.id === id),
   users: {
     getAll: (): User[] => users,
     getByUsername: (username: string): User | undefined => 
@@ -67,6 +70,37 @@ export const db = {
     // Listar todos los bindings
     getAllBindings: (): Map<string, string> => {
       return new Map(emailToUserBindings);
+    },
+    // PIN management
+    setPinForUser: (userId: string, pin: string): boolean => {
+      if (pin.length !== 4 || !/^\d{4}$/.test(pin)) {
+        return false; // PIN must be 4 digits
+      }
+      userPins.set(userId, pin);
+      logger.info('PIN set for user', 'DB:Auth', { userId, totalPins: userPins.size, allUserIds: Array.from(userPins.keys()) });
+      return true;
+    },
+    verifyPin: (userId: string, pin: string): boolean => {
+      const storedPin = userPins.get(userId);
+      logger.info('PIN verification attempt', 'DB:Auth', { userId, hasStoredPin: !!storedPin, matches: storedPin === pin });
+      return storedPin === pin;
+    },
+    hasPin: (userId: string): boolean => {
+      const has = userPins.has(userId);
+      logger.info('PIN check', 'DB:Auth', { userId, hasPin: has, totalPins: userPins.size, allUserIds: Array.from(userPins.keys()) });
+      return has;
+    },
+    getAllPins: (): Map<string, string> => {
+      return new Map(userPins);
+    },
+    deletePinForUser: (userId: string): boolean => {
+      const existed = userPins.has(userId);
+      logger.info('Attempting to delete PIN', 'DB:Auth', { userId, existed, beforeSize: userPins.size });
+      if (existed) {
+        userPins.delete(userId);
+        logger.info('PIN deleted for user', 'DB:Auth', { userId, afterSize: userPins.size, remainingUsers: Array.from(userPins.keys()) });
+      }
+      return existed;
     }
   },
   drinks: {

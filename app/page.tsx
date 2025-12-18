@@ -1,6 +1,6 @@
 'use client';
 
-import { useSession, signOut, signIn } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
 import Navbar from '@/components/Navbar';
@@ -25,100 +25,22 @@ const RANDOM_PHRASES = [
 ];
 
 function HomePageContent() {
-  const { data: session, status, update } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const [randomPhrase] = useState(() => 
     RANDOM_PHRASES[Math.floor(Math.random() * RANDOM_PHRASES.length)]
   );
-  const [isBinding, setIsBinding] = useState(false);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login');
-      return;
     }
-    
-    if (status === 'authenticated' && session) {
-      const handleBinding = async () => {
-        // Verificar si hay un usuario seleccionado pendiente de binding
-        const selectedUserId = sessionStorage.getItem('pendingBindUserId') || localStorage.getItem('selectedUser');
-        
-        if (selectedUserId) {
-          setIsBinding(true);
-          try {
-            // Intentar hacer el binding
-            const response = await fetch('/api/auth/bind', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ userId: selectedUserId })
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-              sessionStorage.removeItem('pendingBindUserId');
-              localStorage.removeItem('selectedUser');
-              
-              // IMPORTANTE: Actualizar la sesión para reflejar el binding
-              // Esto fuerza a NextAuth a re-evaluar los callbacks
-              console.log('✅ Binding successful, updating session...');
-              
-              // Esperar un momento para que el binding se complete
-              await new Promise(resolve => setTimeout(resolve, 100));
-              
-              // Actualizar la sesión - esto llama al callback session() nuevamente
-              await update();
-              
-              // Esperar otro momento y recargar para asegurar que todo esté sincronizado
-              await new Promise(resolve => setTimeout(resolve, 200));
-              window.location.reload();
-              
-            } else if (response.status === 409) {
-              // Usuario ya tomado por otro email
-              alert(`El usuario ya está siendo usado por otra cuenta de Google. Por favor selecciona otro usuario.`);
-              sessionStorage.removeItem('pendingBindUserId');
-              localStorage.removeItem('selectedUser');
-              await signOut({ callbackUrl: '/login' });
-            }
-          } catch (error) {
-            console.error('Error binding user:', error);
-            setIsBinding(false);
-          }
-        } else {
-          // Verificar el estado del binding actual
-          try {
-            const response = await fetch('/api/auth/bind');
-            const data = await response.json();
-            
-            if (!data.bound) {
-              // No está vinculado, redirigir al login
-              router.push('/login');
-            }
-          } catch (error) {
-            console.error('Error checking bind status:', error);
-          }
-        }
-      };
-
-      handleBinding();
-    }
-  }, [status, session, router, update]);
+  }, [status, router]);
 
   if (status === 'loading') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
-
-  if (isBinding) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Vinculando tu cuenta...</p>
-        </div>
       </div>
     );
   }

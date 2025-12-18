@@ -30,6 +30,17 @@ export default function Navbar() {
               <div className="text-right">
                 <p className="text-sm font-medium text-gray-700">{session.user.name}</p>
               </div>
+
+              {/* Admin button for Brux */}
+              {session.user.id === '1' && (
+                <Link
+                  href="/admin"
+                  className="px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors border border-blue-300"
+                >
+                  Admin
+                </Link>
+              )}
+
               <button
                 onClick={handleLogout}
                 className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-orange-500 flex items-center justify-center hover:shadow-lg transition-all hover:scale-105 shadow-md overflow-hidden"
