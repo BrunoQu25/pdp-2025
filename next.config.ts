@@ -1,9 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Configuración para AWS Amplify
-  output: 'standalone',
-
   images: {
     remotePatterns: [
       {
