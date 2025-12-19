@@ -133,8 +133,8 @@ export const db = {
         voteCount: drink.votes.length 
       });
 
-      // Check if should be deleted (>10 votes)
-      if (drink.votes.length > 10 && !drink.deleted) {
+      // Check if should be deleted (>9 votes)
+      if (drink.votes.length > 9 && !drink.deleted) {
         drink.deleted = true;
         drink.deletedAt = new Date();
         // Remove points from user
