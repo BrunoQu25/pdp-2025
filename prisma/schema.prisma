@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id              String   @id
+  username        String   @unique
+  displayName     String
+  photoUrl        String
+  points          Float    @default(0)
+  authorizedEmail String?
+  
+  pin             String?  // PIN de seguridad para login (4 dígitos)
+
+  // Relations
+  drinks          Drink[]
+  votes           Vote[]
+  emailBindings   EmailBinding[]
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Drink {
+  id        String   @id
+  userId    String
+  username  String   // Denormalizado para facilitar listados
+  size      String
+  points    Float
+  photoUrl  String
+  timestamp DateTime @default(now())
+  deleted   Boolean  @default(false)
+  deletedAt DateTime?
+
+  user      User     @relation(fields: [userId], references: [id])
+  votes     Vote[]
+}
+
+model Vote {
+  id        String   @id @default(cuid())
+  drinkId   String
+  userId    String
+  createdAt DateTime @default(now())
+
+  drink     Drink    @relation(fields: [drinkId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([drinkId, userId]) // Un usuario solo puede votar una vez por trago
+}
+
+model EmailBinding {
+  id     String @id @default(cuid())
+  email  String @unique
+  userId String
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
