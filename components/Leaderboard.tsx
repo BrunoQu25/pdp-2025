@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
-import { getFullAvatarUrl } from '@/lib/avatars';
 
 interface LeaderboardEntry {
   id: string;
@@ -73,15 +71,10 @@ export default function Leaderboard() {
               </div>
             </div>
 
-            <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 shadow-md ring-2 ring-white">
-              <Image
-                src={getFullAvatarUrl(entry.photoUrl)}
-                alt={entry.displayName}
-                width={48}
-                height={48}
-                className="w-full h-full object-cover"
-                unoptimized
-              />
+            <div className="w-12 h-12 rounded-full flex-shrink-0 shadow-md ring-2 ring-white bg-gradient-to-br from-blue-500 to-orange-500 flex items-center justify-center">
+              <span className="text-xl font-bold text-white">
+                {entry.displayName[0].toUpperCase()}
+              </span>
             </div>
 
             <div className="flex-1 min-w-0">

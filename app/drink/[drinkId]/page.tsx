@@ -74,30 +74,37 @@ export default function DrinkDetailPage() {
 
   const getSizeEmoji = (size: string) => {
     const emojis: Record<string, string> = {
-      'small': '🥃',
-      'medium': '🍺',
-      'large': '🍻',
-      'extra-large': '🍾'
+      'Cervecita': '🍺',
+      'Caipi/Daiki': '🍋🍓',
+      'Cerveza': '🍻',
+      'Trago': '🍸',
+      'Loca Shot': '☠️',
+      'Triple Loca Shot': '☠️☠️☠️'
     };
     return emojis[size] || '🍺';
   };
 
   const getSizeLabel = (size: string) => {
     const labels: Record<string, string> = {
-      'small': 'Pequeño',
-      'medium': 'Mediano',
-      'large': 'Grande',
-      'extra-large': 'Extra Grande'
+      'Cervecita': 'Pequeño',
+      'Caipi/Daiki': 'Mediano',
+      'Cerveza': 'Grande',
+      'Trago': 'Grande',
+      'Loca Shot': 'Extra Grande',
+      'Triple Loca Shot': 'Extra Grande'
     };
     return labels[size] || size;
   };
 
+
   const getSizeDescription = (size: string) => {
     const descriptions: Record<string, string> = {
-      'small': 'Un shot o bebida pequeña - perfecto para calentar motores',
-      'medium': 'Una cerveza estándar o copa mediana - el clásico',
-      'large': 'Una cerveza grande o doble - para los valientes',
-      'extra-large': 'Una botella o jarra - ¡modo leyenda activado!'
+      'Cervecita': 'Lata chica',
+      'Caipi/Daiki': 'Traguito clasico',
+      'Cerveza': 'Una cerveza grande o doble',
+      'Trago': 'Un trago fuerte',
+      'Loca Shot': 'Un shot potente',
+      'Triple Loca Shot': 'El triple shot mas potente de todos'
     };
     return descriptions[size] || '';
   };
