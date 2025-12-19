@@ -1,6 +1,11 @@
 import { withAuth } from 'next-auth/middleware';
 import { NextResponse } from 'next/server';
 
+console.log('----------------------------------------');
+console.log('🔍 Middleware Environment Check:');
+console.log('NEXTAUTH_SECRET defined:', !!process.env.NEXTAUTH_SECRET);
+console.log('----------------------------------------');
+
 export default withAuth(
   function middleware(req) {
     return NextResponse.next();

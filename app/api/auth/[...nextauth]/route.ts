@@ -3,6 +3,19 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import { db } from '@/lib/db';
 import { logger } from '@/lib/logger';
 
+// Debug environment variables
+console.log('----------------------------------------');
+console.log('🔍 Auth Route Environment Check:');
+console.log('NEXTAUTH_SECRET defined:', !!process.env.NEXTAUTH_SECRET);
+if (process.env.NEXTAUTH_SECRET) {
+  console.log('NEXTAUTH_SECRET length:', process.env.NEXTAUTH_SECRET.length);
+  console.log('NEXTAUTH_SECRET first char:', process.env.NEXTAUTH_SECRET.substring(0, 1));
+} else {
+  console.error('❌ NEXTAUTH_SECRET IS MISSING');
+}
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('----------------------------------------');
+
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
