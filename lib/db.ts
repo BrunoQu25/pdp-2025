@@ -1,163 +1,276 @@
 import { User, Drink, HARDCODED_USERS } from '@/types';
+import prisma from './prisma';
 import { logger } from './logger';
 
-// In-memory storage for demo (in production, use a real database)
-let users: User[] = [...HARDCODED_USERS];
-let drinks: Drink[] = [];
-const emailToUserBindings: Map<string, string> = new Map(); // email -> userId
-const userPins: Map<string, string> = new Map(); // userId -> PIN (4 digits)
-
-logger.info('Database initialized', 'DB', {
-  userCount: users.length,
-  drinksCount: drinks.length
+// Helper to map DB Drink to App Drink type
+const mapDrink = (dbDrink: any): Drink => ({
+  ...dbDrink,
+  votes: dbDrink.votes ? dbDrink.votes.map((v: any) => v.userId) : [],
 });
 
 export const db = {
-  getUserById: (id: string): User | undefined => 
-    users.find(u => u.id === id),
+  getUserById: async (id: string): Promise<User | undefined> => {
+    const user = await prisma.user.findUnique({ where: { id } });
+    return user || undefined;
+  },
+
   users: {
-    getAll: (): User[] => users,
-    getByUsername: (username: string): User | undefined => 
-      users.find(u => u.username.toLowerCase() === username.toLowerCase()),
-    getById: (id: string): User | undefined => 
-      users.find(u => u.id === id),
-    getByEmail: (email: string): User | undefined => 
-      users.find(u => u.authorizedEmail?.toLowerCase() === email.toLowerCase()),
-    updatePoints: (userId: string, points: number): User | undefined => {
-      const user = users.find(u => u.id === userId);
-      if (user) {
-        user.points += points;
+    getAll: async (): Promise<User[]> => {
+      const users = await prisma.user.findMany({
+        orderBy: { points: 'desc' }
+      });
+      return users;
+    },
+    getByUsername: async (username: string): Promise<User | undefined> => {
+      const user = await prisma.user.findUnique({ where: { username } });
+      return user || undefined;
+    },
+    getById: async (id: string): Promise<User | undefined> => {
+      const user = await prisma.user.findUnique({ where: { id } });
+      return user || undefined;
+    },
+    getByEmail: async (email: string): Promise<User | undefined> => {
+      // Searching by authorizedEmail directly
+      const user = await prisma.user.findFirst({
+        where: { authorizedEmail: { equals: email, mode: 'insensitive' } }
+      });
+      return user || undefined;
+    },
+    updatePoints: async (userId: string, points: number): Promise<User | undefined> => {
+      try {
+        const user = await prisma.user.update({
+          where: { id: userId },
+          data: { points: { increment: points } }
+        });
+        return user;
+      } catch (e) {
+        logger.error('Failed to update points', 'DB', { userId, error: e });
+        return undefined;
       }
-      return user;
     }
   },
+
   auth: {
-    // Obtener el userId asociado a un email
-    getUserIdByEmail: (email: string): string | undefined => {
-      return emailToUserBindings.get(email.toLowerCase());
+    // Obtener el userId asociado a un email (via EmailBinding)
+    getUserIdByEmail: async (email: string): Promise<string | undefined> => {
+      const binding = await prisma.emailBinding.findUnique({
+        where: { email: email.toLowerCase() }
+      });
+      return binding?.userId;
     },
     // Verificar si un usuario ya está vinculado a algún email
-    isUserBound: (userId: string): boolean => {
-      return Array.from(emailToUserBindings.values()).includes(userId);
+    isUserBound: async (userId: string): Promise<boolean> => {
+      const count = await prisma.emailBinding.count({
+        where: { userId }
+      });
+      return count > 0;
     },
     // Vincular un email a un usuario
-    bindEmailToUser: (email: string, userId: string): boolean => {
+    bindEmailToUser: async (email: string, userId: string): Promise<boolean> => {
       const normalizedEmail = email.toLowerCase();
-      
-      // Verificar si el email ya está vinculado
-      if (emailToUserBindings.has(normalizedEmail)) {
-        return false; // Email ya vinculado a otro usuario
+      try {
+        // Verificar si email ya existe es manejado por constraint @unique
+        // Verificar si usuario ya tiene binding
+        const existingUserBinding = await prisma.emailBinding.findFirst({
+          where: { userId }
+        });
+
+        if (existingUserBinding) return false;
+
+        await prisma.emailBinding.create({
+          data: {
+            email: normalizedEmail,
+            userId
+          }
+        });
+        logger.info('Email bound to user', 'DB:Auth', { email: normalizedEmail, userId });
+        return true;
+      } catch (e) {
+        logger.error('Failed to bind email', 'DB', { email, userId, error: e });
+        return false;
       }
-      
-      // Verificar si el usuario ya está vinculado a otro email
-      if (db.auth.isUserBound(userId)) {
-        return false; // Usuario ya vinculado a otro email
-      }
-      
-      emailToUserBindings.set(normalizedEmail, userId);
-      logger.info('Email bound to user', 'DB:Auth', { email: normalizedEmail, userId });
-      return true;
     },
     // Obtener el email vinculado a un usuario
-    getEmailByUserId: (userId: string): string | undefined => {
-      for (const [email, uid] of emailToUserBindings.entries()) {
-        if (uid === userId) {
-          return email;
-        }
-      }
-      return undefined;
+    getEmailByUserId: async (userId: string): Promise<string | undefined> => {
+      const binding = await prisma.emailBinding.findFirst({
+        where: { userId }
+      });
+      return binding?.email;
     },
     // Listar todos los bindings
-    getAllBindings: (): Map<string, string> => {
-      return new Map(emailToUserBindings);
+    getAllBindings: async (): Promise<Map<string, string>> => {
+      const bindings = await prisma.emailBinding.findMany();
+      const map = new Map<string, string>();
+      bindings.forEach((b: any) => map.set(b.email, b.userId));
+      return map;
     },
     // PIN management
-    setPinForUser: (userId: string, pin: string): boolean => {
+    setPinForUser: async (userId: string, pin: string): Promise<boolean> => {
       if (pin.length !== 4 || !/^\d{4}$/.test(pin)) {
-        return false; // PIN must be 4 digits
+        return false;
       }
-      userPins.set(userId, pin);
-      logger.info('PIN set for user', 'DB:Auth', { userId });
-      return true;
+      try {
+        await prisma.user.update({
+          where: { id: userId },
+          data: { pin }
+        });
+        logger.info('PIN set for user', 'DB:Auth', { userId });
+        return true;
+      } catch (e) {
+        return false;
+      }
     },
-    verifyPin: (userId: string, pin: string): boolean => {
-      const storedPin = userPins.get(userId);
-      return storedPin === pin;
+    verifyPin: async (userId: string, pin: string): Promise<boolean> => {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { pin: true }
+      });
+      return user?.pin === pin;
     },
-    hasPin: (userId: string): boolean => {
-      return userPins.has(userId);
+    hasPin: async (userId: string): Promise<boolean> => {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { pin: true }
+      });
+      return !!user?.pin;
     },
-    getAllPins: (): Map<string, string> => {
-      return new Map(userPins);
+    getAllPins: async (): Promise<Map<string, string>> => {
+      // Security risk? keeping implementation for compatibility but usage should be careful
+      const users = await prisma.user.findMany({
+        where: { pin: { not: null } },
+        select: { id: true, pin: true }
+      });
+      const map = new Map<string, string>();
+      users.forEach((u: any) => {
+        if (u.pin) map.set(u.id, u.pin);
+      });
+      return map;
     },
-    deletePinForUser: (userId: string): boolean => {
-      const result = userPins.delete(userId);
-      if (result) {
+    deletePinForUser: async (userId: string): Promise<boolean> => {
+      try {
+        await prisma.user.update({
+          where: { id: userId },
+          data: { pin: null }
+        });
         logger.info('PIN deleted for user', 'DB:Auth', { userId });
+        return true;
+      } catch {
+        return false;
       }
-      return result;
     }
   },
+
   drinks: {
-    getAll: (): Drink[] => drinks,
-    getByUserId: (userId: string): Drink[] => 
-      drinks.filter(d => d.userId === userId),
-    getById: (drinkId: string): Drink | undefined =>
-      drinks.find(d => d.id === drinkId),
-    add: (drink: Omit<Drink, 'id'>): Drink => {
-      const newDrink: Drink = {
-        ...drink,
-        id: `drink-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-      };
-      drinks.push(newDrink);
-      return newDrink;
+    getAll: async (): Promise<Drink[]> => {
+      const drinks = await prisma.drink.findMany({
+        include: { votes: true },
+        orderBy: { timestamp: 'desc' }
+      });
+      return drinks.map(mapDrink);
     },
-    vote: (drinkId: string, voterId: string): { drink: Drink | undefined; deleted: boolean } => {
-      const drink = drinks.find(d => d.id === drinkId);
+    getByUserId: async (userId: string): Promise<Drink[]> => {
+      const drinks = await prisma.drink.findMany({
+        where: { userId },
+        include: { votes: true },
+        orderBy: { timestamp: 'desc' }
+      });
+      return drinks.map(mapDrink);
+    },
+    getById: async (drinkId: string): Promise<Drink | undefined> => {
+      const drink = await prisma.drink.findUnique({
+        where: { id: drinkId },
+        include: { votes: true }
+      });
+      return drink ? mapDrink(drink) : undefined;
+    },
+    add: async (drink: Omit<Drink, 'id'>): Promise<Drink> => {
+      const newDrink = await prisma.drink.create({
+        data: {
+          id: `drink-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          userId: drink.userId,
+          username: drink.username,
+          size: drink.size,
+          points: drink.points,
+          photoUrl: drink.photoUrl,
+          deleted: drink.deleted,
+          votes: { create: [] } // Init empty votes
+        },
+        include: { votes: true }
+      });
+      return mapDrink(newDrink);
+    },
+    vote: async (drinkId: string, voterId: string): Promise<{ drink: Drink | undefined; deleted: boolean }> => {
+      const drink = await prisma.drink.findUnique({
+        where: { id: drinkId },
+        include: { votes: true }
+      });
+
       if (!drink || drink.deleted) {
-        logger.debug('Vote rejected - drink not found or already deleted', 'DB:Vote', { drinkId });
-        return { drink, deleted: false };
+        return { drink: drink ? mapDrink(drink) : undefined, deleted: false };
       }
 
       // Check if user already voted
-      if (drink.votes.includes(voterId)) {
-        logger.debug('Vote rejected - user already voted', 'DB:Vote', { drinkId, voterId });
-        return { drink, deleted: false };
+      if (drink.votes.some((v: any) => v.userId === voterId)) {
+        return { drink: mapDrink(drink), deleted: false };
       }
 
-      // Add vote
-      drink.votes.push(voterId);
-      logger.debug('Vote added', 'DB:Vote', { 
-        drinkId, 
-        voterId, 
-        voteCount: drink.votes.length 
+      // Add vote transaction
+      // We need to add vote, and check count
+      const updatedDrink = await prisma.$transaction(async (tx: any) => {
+        // Create vote
+        await tx.vote.create({
+          data: {
+            drinkId,
+            userId: voterId
+          }
+        });
+
+        // Get fresh drink data
+        const freshDrink = await tx.drink.findUnique({
+          where: { id: drinkId },
+          include: { votes: true }
+        });
+
+        if (!freshDrink) throw new Error('Drink disappeared');
+
+        // Check threshold
+        if (freshDrink.votes.length > 9) {
+          // Delete logic
+          const user = await tx.user.findUnique({ where: { id: freshDrink.userId } });
+          if (user) {
+            await tx.user.update({
+              where: { id: freshDrink.userId },
+              data: { points: { decrement: freshDrink.points } }
+            });
+          }
+
+          return await tx.drink.update({
+            where: { id: drinkId },
+            data: {
+              deleted: true,
+              deletedAt: new Date()
+            },
+            include: { votes: true }
+          });
+        }
+
+        return freshDrink;
       });
 
-      // Check if should be deleted (>9 votes)
-      if (drink.votes.length > 9 && !drink.deleted) {
-        drink.deleted = true;
-        drink.deletedAt = new Date();
-        // Remove points from user
-        db.users.updatePoints(drink.userId, -drink.points);
-        
-        logger.warn('🚨 Drink deleted by community vote', 'DB:Vote', {
-          drinkId,
-          userId: drink.userId,
-          username: drink.username,
-          voteCount: drink.votes.length,
-          pointsDeducted: drink.points
-        });
-        
-        return { drink, deleted: true };
-      }
+      logger.debug('Vote processed', 'DB:Vote', {
+        drinkId,
+        voterId,
+        deleted: updatedDrink.deleted
+      });
 
-      return { drink, deleted: false };
+      return { drink: mapDrink(updatedDrink), deleted: updatedDrink.deleted };
     }
   },
-  reset: () => {
-    users = [...HARDCODED_USERS];
-    drinks = [];
-    emailToUserBindings.clear();
+
+  reset: async () => {
+    // For debugging/dev mostly - truncating likely restricted in prod envs
+    // Not implementing full truncate for safety, or implement if truly needed
+    logger.warn('Reset called but disabled in Prisma implementation for safety', 'DB');
   }
 };
 

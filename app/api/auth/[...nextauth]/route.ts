@@ -7,12 +7,6 @@ import { logger } from '@/lib/logger';
 console.log('----------------------------------------');
 console.log('🔍 Auth Route Environment Check:');
 console.log('NEXTAUTH_SECRET defined:', !!process.env.NEXTAUTH_SECRET);
-if (process.env.NEXTAUTH_SECRET) {
-  console.log('NEXTAUTH_SECRET length:', process.env.NEXTAUTH_SECRET.length);
-  console.log('NEXTAUTH_SECRET first char:', process.env.NEXTAUTH_SECRET.substring(0, 1));
-} else {
-  console.error('❌ NEXTAUTH_SECRET IS MISSING');
-}
 console.log('NODE_ENV:', process.env.NODE_ENV);
 console.log('----------------------------------------');
 
@@ -28,7 +22,7 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const user = db.users.getByUsername(credentials.username);
+        const user = await db.users.getByUsername(credentials.username);
 
         if (user) {
           return {
@@ -71,7 +65,7 @@ export const authOptions: NextAuthOptions = {
         session.user.image = token.picture;
 
         // Fetch fresh data from DB if needed, or rely on token
-        const dbUser = db.users.getById(token.id as string);
+        const dbUser = await db.users.getById(token.id as string);
         if (dbUser) {
           session.user.name = dbUser.displayName;
           session.user.image = dbUser.photoUrl;
@@ -87,4 +81,3 @@ export const authOptions: NextAuthOptions = {
 const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };
-

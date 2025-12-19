@@ -16,10 +16,10 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const user = db.getUserById(userId);
-    
+    const user = await db.getUserById(userId);
+
     logger.info('User lookup result', 'API', { userId, found: !!user });
-    
+
     if (!user) {
       return NextResponse.json(
         { success: false, error: 'Usuario no encontrado' },
@@ -28,7 +28,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Delete the PIN
-    const deleted = db.auth.deletePinForUser(userId);
+    const deleted = await db.auth.deletePinForUser(userId);
 
     logger.info('PIN reset completed', 'API', { userId, username: user.username, deleted });
 

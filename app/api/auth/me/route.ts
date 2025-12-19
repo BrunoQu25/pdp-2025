@@ -7,7 +7,7 @@ import { db } from '@/lib/db';
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    
+
     if (!session?.user) {
       return NextResponse.json(
         { error: 'Not authenticated' },
@@ -16,10 +16,10 @@ export async function GET(request: NextRequest) {
     }
 
     const userId = session.user.id;
-    const dbUser = db.users.getById(userId);
-    
+    const dbUser = await db.users.getById(userId);
+
     // Obtener el email de Google vinculado
-    const googleEmail = db.auth.getEmailByUserId(userId);
+    const googleEmail = await db.auth.getEmailByUserId(userId);
 
     return NextResponse.json({
       session: {

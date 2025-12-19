@@ -7,9 +7,9 @@ import { logger, logApiRequest, logApiResponse, logApiError } from '@/lib/logger
 
 export async function GET(request: NextRequest) {
   logApiRequest(request, 'Get all drinks');
-  
+
   try {
-    const drinks = db.drinks.getAll();
+    const drinks = await db.drinks.getAll();
     logger.info(`Retrieved ${drinks.length} drinks from database`, 'API:Drinks');
     logApiResponse(request, 200, { count: drinks.length });
     return NextResponse.json(drinks);
@@ -22,10 +22,10 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   logApiRequest(request, 'Create new drink');
-  
+
   try {
     const session = await getServerSession(authOptions);
-    
+
     if (!session?.user?.id) {
       logger.warn('Unauthorized drink creation attempt', 'API:Drinks');
       logApiError(request, 401, 'No session');
@@ -34,11 +34,11 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const { size, photoUrl } = body;
-    
-    logger.debug('Drink creation request', 'API:Drinks', { 
-      userId: session.user.id, 
-      size, 
-      photoUrlLength: photoUrl?.length 
+
+    logger.debug('Drink creation request', 'API:Drinks', {
+      userId: session.user.id,
+      size,
+      photoUrlLength: photoUrl?.length
     });
 
     if (!size || !photoUrl) {
@@ -47,8 +47,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const user = db.users.getById(session.user.id);
-    
+    const user = await db.users.getById(session.user.id);
+
     if (!user) {
       logger.error('User not found when creating drink', 'API:Drinks', null, { userId: session.user.id });
       logApiError(request, 404, 'User not found');
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
 
     const points = DRINK_POINTS[size as keyof typeof DRINK_POINTS] || 0;
 
-    const drink = db.drinks.add({
+    const drink = await db.drinks.add({
       userId: user.id,
       username: user.username,
       size,
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Update user points
-    db.users.updatePoints(user.id, points);
+    await db.users.updatePoints(user.id, points);
 
     logger.info(`Drink created successfully`, 'API:Drinks', {
       drinkId: drink.id,
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
       points,
       totalUserPoints: user.points + points
     });
-    
+
     logApiResponse(request, 200, { drinkId: drink.id, points });
 
     return NextResponse.json(drink);
