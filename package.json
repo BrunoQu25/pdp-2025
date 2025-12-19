@@ -7,7 +7,15 @@
     "dev:mobile": "node scripts/get-local-ip.js && next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:push": "prisma db push",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:studio": "prisma studio",
+    "db:test": "node test-db-connection.js",
+    "amplify:build": "npm ci && npx prisma generate && npm run build"
   },
   "dependencies": {
     "@azure/storage-blob": "^12.29.1",

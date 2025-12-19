@@ -4,19 +4,33 @@ frontend:
     preBuild:
       commands:
         - npm ci
+        # Generar Prisma Client
         - npx prisma generate
+        # Ejecutar migraciones de Prisma (opcional, comentar si no quieres auto-migrar)
+        # - npx prisma migrate deploy
     build:
       commands:
+        # Crear archivo .env.production con todas las variables necesarias
+        - echo "DATABASE_URL=$DATABASE_URL" >> .env.production
+        - echo "DIRECT_URL=$DIRECT_URL" >> .env.production
         - echo "NEXTAUTH_SECRET=$NEXTAUTH_SECRET" >> .env.production
         - echo "NEXTAUTH_URL=$NEXTAUTH_URL" >> .env.production
         - echo "NEXT_PUBLIC_AZURE_STORAGE_ACCOUNT_NAME=$NEXT_PUBLIC_AZURE_STORAGE_ACCOUNT_NAME" >> .env.production
         - echo "AZURE_STORAGE_CONNECTION_STRING=$AZURE_STORAGE_CONNECTION_STRING" >> .env.production
         - echo "AZURE_STORAGE_CONTAINER_NAME=$AZURE_STORAGE_CONTAINER_NAME" >> .env.production
+        # Build de Next.js
         - npm run build
   artifacts:
-    baseDirectory: .next
+    # Para Next.js, necesitamos todo el proyecto
+    baseDirectory: .
     files:
       - '**/*'
+      - '.next/**/*'
+      - 'public/**/*'
+      - 'node_modules/**/*'
+      - 'package.json'
+      - 'package-lock.json'
   cache:
     paths:
       - node_modules/**/*
+      - .next/cache/**/*
