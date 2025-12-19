@@ -4,6 +4,7 @@ frontend:
     preBuild:
       commands:
         - npm ci
+        - npx prisma generate
     build:
       commands:
         - echo "NEXTAUTH_SECRET=$NEXTAUTH_SECRET" >> .env.production
