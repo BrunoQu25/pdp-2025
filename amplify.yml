@@ -21,16 +21,14 @@ frontend:
       commands:
         # Build de Next.js
         - npm run build
+        # Copiar archivos necesarios para standalone
+        - cp -r .next/static .next/standalone/.next/static
+        - cp -r public .next/standalone/public
   artifacts:
-    # Para Next.js, necesitamos todo el proyecto
-    baseDirectory: .
+    # Para Next.js standalone
+    baseDirectory: .next/standalone
     files:
       - '**/*'
-      - '.next/**/*'
-      - 'public/**/*'
-      - 'node_modules/**/*'
-      - 'package.json'
-      - 'package-lock.json'
   cache:
     paths:
       - node_modules/**/*
