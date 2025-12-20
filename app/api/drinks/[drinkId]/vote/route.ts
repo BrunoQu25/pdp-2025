@@ -9,10 +9,10 @@ export async function POST(
   { params }: { params: Promise<{ drinkId: string }> }
 ) {
   logApiRequest(request, 'Vote against drink');
-  
+
   try {
     const session = await getServerSession(authOptions);
-    
+
     if (!session?.user?.id) {
       logger.warn('Unauthorized vote attempt', 'API:Vote');
       logApiError(request, 401, 'No session');
@@ -24,7 +24,7 @@ export async function POST(
 
     logger.debug('Processing vote', 'API:Vote', { drinkId, voterId });
 
-    const result = db.drinks.vote(drinkId, voterId);
+    const result = await db.drinks.vote(drinkId, voterId);
 
     if (!result.drink) {
       logger.warn('Vote failed - drink not found', 'API:Vote', { drinkId });
@@ -46,9 +46,9 @@ export async function POST(
       });
     }
 
-    logApiResponse(request, 200, { 
-      voteCount: result.drink.votes.length, 
-      deleted: result.deleted 
+    logApiResponse(request, 200, {
+      voteCount: result.drink.votes.length,
+      deleted: result.deleted
     });
 
     return NextResponse.json({

@@ -7,7 +7,7 @@ import { logger } from '@/lib/logger';
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    
+
     if (!session?.user?.email) {
       return NextResponse.json(
         { error: 'Not authenticated' },
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { userId } = await request.json();
-    
+
     if (!userId) {
       return NextResponse.json(
         { error: 'userId is required' },
@@ -25,11 +25,11 @@ export async function POST(request: NextRequest) {
     }
 
     const email = session.user.email;
-    
+
     // Verificar si el email ya está vinculado
-    const existingBinding = db.auth.getUserIdByEmail(email);
+    const existingBinding = await db.auth.getUserIdByEmail(email);
     if (existingBinding) {
-      const user = db.users.getById(existingBinding);
+      const user = await db.users.getById(existingBinding);
       return NextResponse.json({
         success: true,
         alreadyBound: true,
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verificar si el usuario solicitado ya está vinculado a otro email
-    if (db.auth.isUserBound(userId)) {
+    if (await db.auth.isUserBound(userId)) {
       return NextResponse.json(
         { error: 'User already bound to another email', code: 'USER_TAKEN' },
         { status: 409 }
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verificar que el usuario existe
-    const user = db.users.getById(userId);
+    const user = await db.users.getById(userId);
     if (!user) {
       return NextResponse.json(
         { error: 'User not found' },
@@ -56,8 +56,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Crear el binding
-    const success = db.auth.bindEmailToUser(email, userId);
-    
+    const success = await db.auth.bindEmailToUser(email, userId);
+
     if (success) {
       logger.info('Email successfully bound to user', 'API:Bind', {
         email,
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    
+
     if (!session?.user?.email) {
       return NextResponse.json(
         { bound: false },
@@ -99,10 +99,10 @@ export async function GET(request: NextRequest) {
     }
 
     const email = session.user.email;
-    const userId = db.auth.getUserIdByEmail(email);
-    
+    const userId = await db.auth.getUserIdByEmail(email);
+
     if (userId) {
-      const user = db.users.getById(userId);
+      const user = await db.users.getById(userId);
       return NextResponse.json({
         bound: true,
         userId,

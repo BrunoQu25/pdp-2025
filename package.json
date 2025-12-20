@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "dev:mobile": "node scripts/get-local-ip.js && next dev",
+    "dev:mobile": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -19,12 +19,14 @@
   },
   "dependencies": {
     "@azure/storage-blob": "^12.29.1",
-    "@prisma/adapter-pg": "^7.2.0",
-    "@prisma/client": "^7.2.0",
+    "@prisma/client": "^6.17.1",
+    "@prisma/extension-accelerate": "^2.0.2",
+    "dotenv": "^17.2.3",
     "next": "16.0.10",
-    "next-auth": "^4.24.13",
+    "prisma": "^6.17.1",
     "react": "19.2.1",
-    "react-dom": "19.2.1"
+    "react-dom": "19.2.1",
+    "next-auth": "^4.22.2"
   },
   "devDependencies": {
     "@types/node": "^20",
@@ -35,7 +37,6 @@
     "eslint": "^9",
     "eslint-config-next": "16.0.10",
     "postcss": "^8.5.6",
-    "prisma": "^7.2.0",
     "tailwindcss": "^3.4.19",
     "tsx": "^4.21.0",
     "typescript": "^5"

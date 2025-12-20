@@ -6,7 +6,7 @@ import { logger } from '@/lib/logger';
 export async function POST(request: NextRequest) {
   try {
     const { userId, pin } = await request.json();
-    
+
     if (!userId || !pin) {
       return NextResponse.json(
         { error: 'userId and pin are required' },
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user exists
-    const user = db.users.getById(userId);
+    const user = await db.users.getById(userId);
     if (!user) {
       return NextResponse.json(
         { error: 'User not found' },
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user already has a PIN
-    if (db.auth.hasPin(userId)) {
+    if (await db.auth.hasPin(userId)) {
       return NextResponse.json(
         { error: 'User already has a PIN set' },
         { status: 409 }
@@ -40,8 +40,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Set the PIN
-    const success = db.auth.setPinForUser(userId, pin);
-    
+    const success = await db.auth.setPinForUser(userId, pin);
+
     if (success) {
       logger.info('PIN set successfully', 'API:Pin', { userId, username: user.username });
       return NextResponse.json({
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const { userId, pin } = await request.json();
-    
+
     if (!userId || !pin) {
       return NextResponse.json(
         { error: 'userId and pin are required' },
@@ -78,7 +78,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Check if user exists
-    const user = db.users.getById(userId);
+    const user = await db.users.getById(userId);
     if (!user) {
       return NextResponse.json(
         { error: 'User not found' },
@@ -87,8 +87,8 @@ export async function PUT(request: NextRequest) {
     }
 
     // Verify PIN
-    const isValid = db.auth.verifyPin(userId, pin);
-    
+    const isValid = await db.auth.verifyPin(userId, pin);
+
     if (isValid) {
       logger.info('PIN verified successfully', 'API:Pin', { userId, username: user.username });
       return NextResponse.json({
@@ -124,26 +124,26 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
-    
+
     if (!userId) {
       // If no userId, return all PINs (for debugging)
-      const allPins = db.auth.getAllPins();
+      const allPins = await db.auth.getAllPins();
       const pinList = Array.from(allPins.entries()).map(([id, pin]) => ({
         userId: id,
         hasPin: true,
         pinPreview: pin.substring(0, 2) + '**'
       }));
-      
+
       logger.info('All PINs requested', 'API:Pin', { count: pinList.length });
-      
+
       return NextResponse.json({
         pins: pinList,
         count: pinList.length
       });
     }
 
-    const hasPin = db.auth.hasPin(userId);
-    
+    const hasPin = await db.auth.hasPin(userId);
+
     return NextResponse.json({
       hasPin,
       userId

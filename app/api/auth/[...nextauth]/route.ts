@@ -28,7 +28,7 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const user = db.users.getByUsername(credentials.username);
+        const user = await db.users.getByUsername(credentials.username);
 
         if (user) {
           return {
@@ -71,7 +71,7 @@ export const authOptions: NextAuthOptions = {
         session.user.image = token.picture;
 
         // Fetch fresh data from DB if needed, or rely on token
-        const dbUser = db.users.getById(token.id as string);
+        const dbUser = await db.users.getById(token.id as string);
         if (dbUser) {
           session.user.name = dbUser.displayName;
           session.user.image = dbUser.photoUrl;
